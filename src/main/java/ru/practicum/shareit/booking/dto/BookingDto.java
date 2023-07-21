@@ -9,10 +9,10 @@ import java.sql.Timestamp;
 @Setter
 @EqualsAndHashCode
 public class BookingDto {
-    long id;
-    Timestamp start;
-    Timestamp end;
-    Long itemId;
-    Long bookerId;
-    Integer status;
+    private long id;
+    private Timestamp start;
+    private Timestamp end;
+    private Long itemId;
+    private Long bookerId;
+    private Integer status;
 }

@@ -1,6 +1,8 @@
 package ru.practicum.shareit.user.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.ConflictException;
@@ -13,18 +15,17 @@ import java.util.List;
 
 @Slf4j
 @Service
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
-
-    public UserServiceImpl(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
 
     ////////////////////////////////// CRUD //////////////////////////////////
 
     @Override
     public UserDto getUserById(long id) {
-        return UserDtoMapper.toUserDto(userStorage.getById(id).orElseThrow(() -> badUserId(id)));
+        return UserDtoMapper.toUserDto(userStorage.getById(id).orElseThrow(
+                () -> new BadRequestException("Пользователь с идентификатором " + id + " не найден."))
+        );
     }
 
     @Override
@@ -35,8 +36,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        if (userStorage.containsEmail(userDto.getEmail())) { //пользователь уже есть
-            duplicatedEmail(userDto.getEmail());
+        String email = userDto.getEmail();
+        if (userStorage.containsEmail(email)) { //пользователь уже есть
+            throw new ConflictException("Запрошенный адрес " + email + " уже используется.");
         }
         User user = UserDtoMapper.toUser(userDto);
         userStorage.create(user);
@@ -47,11 +49,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto patchUser(long id, UserDto userDto) {
         //читаем старого пользователя с заданным идентификатором (если он есть)
-        User oldUser = userStorage.getById(id).orElseThrow(() -> badUserId(id));
+        User oldUser = userStorage.getById(id).orElseThrow(
+                () -> new BadRequestException("Пользователь с идентификатором " + id + " не найден.")
+        );
         //проверка корректности патча
         String email = userDto.getEmail();
         if (!oldUser.getEmail().equals(email) && userStorage.containsEmail(email)) {
-            duplicatedEmail(email);
+            throw new ConflictException("Запрошенный адрес " + email + " уже используется.");
         }
         //установка имени
         String name = userDto.getName();
@@ -94,19 +98,5 @@ public class UserServiceImpl implements UserService {
             return false; //@ должно быть не первым и не последним символом
         }
         return (email.indexOf(' ') == -1); //не должно быть пробелов
-    }
-
-    //диагностика ошибочного пользователя
-    private RuntimeException badUserId(long id) {
-        String message = String.format("Пользователь с идентификатором %d не найден.", id);
-        log.error(message);
-        return new BadRequestException(message);
-    }
-
-    //диагностика существующего email
-    private void duplicatedEmail(String email) {
-        String message = "Запрошенный адрес " + email + " уже используется.";
-        log.error(message);
-        throw new ConflictException(message);
     }
 }

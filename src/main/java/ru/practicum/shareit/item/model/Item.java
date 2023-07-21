@@ -11,10 +11,10 @@ import ru.practicum.shareit.request.ItemRequest;
 @Setter
 @EqualsAndHashCode
 public class Item {
-    Long id;
-    String name;
-    String description;
-    Boolean available;
-    long owner;
-    ItemRequest request;
+    private Long id;
+    private String name;
+    private String description;
+    private Boolean available;
+    private long owner;
+    private ItemRequest request;
 }

@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ErrorResponse {
     // название ошибки
-    String error;
+    private String error;
     // подробное описание
-    String description;
+    private String description;
 }

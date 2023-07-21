@@ -9,8 +9,8 @@ import java.sql.Timestamp;
 @Setter
 @EqualsAndHashCode
 public class ItemRequestDto {
-    long id;
-    String description;
-    Long requestorId;
-    Timestamp created;
+    private long id;
+    private String description;
+    private Long requestorId;
+    private Timestamp created;
 }

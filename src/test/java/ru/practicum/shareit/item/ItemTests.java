@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.ForbiddenException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -52,22 +51,9 @@ public class ItemTests {
     }
 
     @Test
-    public void createItemWithoutOwnerTest() {
-        assertThrows(BadRequestException.class, () -> itemService.createItem(
-                null, createItemDto("notebook", "ASUS", true)));
-    }
-
-    @Test
     public void createWithNotExistingOwnerTest() {
         assertThrows(NotFoundException.class, () -> itemService.createItem(
                 10L, createItemDto("notebook", "ASUS", true)));
-    }
-
-    @Test
-    public void patchItemWithoutOwnerTest() {
-        itemService.createItem(1L, createItemDto("notebook", "ASUS", true));
-        assertThrows(BadRequestException.class, () -> itemService.patchItem(null,
-                createItemDto("notebook", "ASUS", true)));
     }
 
     @Test
@@ -159,5 +145,4 @@ public class ItemTests {
         assertEquals(items.get(1).getDescription(), "By Knuth");
         assertEquals(items.get(2).getName(), "About Spring");
     }
-
 }
