@@ -29,8 +29,8 @@ public class BookingDtoMapper {
     public static Booking toBooking(BookingInDto bookingDto) {
         Booking booking = new Booking();
         booking.setId(null);
-        booking.setStart(Timestamp.valueOf(bookingDto.getStart().toLocalDateTime().minusHours(3)));
-        booking.setEnd(Timestamp.valueOf(bookingDto.getEnd().toLocalDateTime().minusHours(3)));
+        booking.setStart(Timestamp.valueOf(bookingDto.getStart().toLocalDateTime()));
+        booking.setEnd(Timestamp.valueOf(bookingDto.getEnd().toLocalDateTime()));
         return booking;
     }
 
