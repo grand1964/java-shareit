@@ -15,7 +15,7 @@ public class BookingInDto {
     private Timestamp start;
     private Timestamp end;
 
-    public boolean Validate() {
+    public boolean validate() {
         //страховка для тестов
         if ((start == null) || (end == null)) {
             return false;

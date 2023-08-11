@@ -32,7 +32,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingOutDto createBooking(Long bookerId, BookingInDto bookingInDto) {
         //проверяем временные характеристики брони
-        if (!bookingInDto.Validate()) {
+        if (!bookingInDto.validate()) {
             throw new BadRequestException("Некорректный диапазон бронирования.");
         }
         long itemId = bookingInDto.getItemId(); //идентификатор вещи

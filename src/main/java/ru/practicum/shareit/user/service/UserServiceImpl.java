@@ -7,20 +7,18 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.user.dto.UserOutDto;
 import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.dto.UserInDto;
+import ru.practicum.shareit.user.dto.UserOutDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor_ = @Autowired)
 public class UserServiceImpl implements UserService {
-    //private final UserStorage userStorage;
     private final UserRepository userRepository;
 
     ////////////////////////////////// CRUD //////////////////////////////////
@@ -41,22 +39,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserOutDto createUser(UserInDto userInDto) {
-        String email = userInDto.getEmail();
-        //if (userStorage.containsEmail(email)) { //пользователь уже есть
-        //TODO ПРОВЕРИТЬ
-        //TODO ?????????????????????????
-        /*if (userRepository.findByEmail(email) != null) { //пользователь уже есть
-            throw new ConflictException("Запрошенный адрес " + email + " уже используется.");
-        }*/
-        //TODO ?????????????????????????
         User user = UserDtoMapper.toUser(userInDto);
-        //userStorage.create(user);
-        //TODO ПРОВЕРИТЬ
         log.info("Создан новый пользователь с идентификатором " + user.getId());
-        //TODO ??????????????????????????
         User newUser = userRepository.save(user);
         return UserDtoMapper.toUserOutDto(newUser);
-        //return UserDtoMapper.toUserOutDto(userRepository.save(user));
     }
 
     @Override
@@ -79,8 +65,6 @@ public class UserServiceImpl implements UserService {
         if (validateEmail(email)) { //некорректный email не устанавливаем
             oldUser.setEmail(email);
         }
-        //userStorage.update(oldUser);
-        //TODO ПРОВЕРИТЬ
         User user = userRepository.save(oldUser);
         log.info("Обновлен пользователь с идентификатором " + oldUser.getId());
         return UserDtoMapper.toUserOutDto(user);
@@ -98,7 +82,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteAllUsers() {
-        //int count = userStorage.deleteAll();
         long count = userRepository.count(); //число пользователей
         userRepository.deleteAll(); //удаляем всех
         log.info("Удалено " + count + " пользователей.");
