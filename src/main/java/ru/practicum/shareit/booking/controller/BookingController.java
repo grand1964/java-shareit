@@ -50,7 +50,7 @@ public class BookingController {
     //создание новой брони
     @PostMapping
     public BookingOutDto createItem(@RequestHeader(HEADER_NAME) Long bookerId,
-                                    @RequestBody BookingInDto bookingInDto) {
+                                    @Valid @RequestBody BookingInDto bookingInDto) {
         log.info("Запрошено создание новой брони пользователем с идентификатором " + bookerId);
         return service.createBooking(bookerId, bookingInDto);
     }

@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import ru.practicum.shareit.user.model.User;
@@ -9,7 +8,6 @@ import javax.persistence.*;
 
 @Getter
 @Setter
-@EqualsAndHashCode
 @Entity
 @Table(name = "items")
 public class Item {

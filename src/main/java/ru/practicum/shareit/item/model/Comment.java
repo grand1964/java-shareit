@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import ru.practicum.shareit.user.model.User;
@@ -10,7 +9,6 @@ import java.sql.Timestamp;
 
 @Getter
 @Setter
-@EqualsAndHashCode
 @Entity
 @Table(name = "comments")
 public class Comment {

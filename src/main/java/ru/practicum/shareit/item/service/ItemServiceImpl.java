@@ -65,12 +65,12 @@ public class ItemServiceImpl implements ItemService {
         //создаем выходной массив вещей
         List<ItemBookedDto> itemsDto = new ArrayList<>();
         //создаем отображение вещей в список комментариев
-        Map<Item, List<Comment>> allComments = ListConverter.pairsToMap(
+        Map<Item, List<Comment>> allComments = ListConverter.itemToComments(
                 itemRepository.getAllCommentsByOwner(ownerId));
         //создаем отображения вещей в бронирования
-        Map<Item, Booking> lastMap = ListConverter.pairsToItems(
+        Map<Item, Booking> lastMap = ListConverter.itemsToBookings(
                 itemRepository.getAllLastBookingsByOwner(ownerId, now));
-        Map<Item, Booking> nextMap = ListConverter.pairsToItems(
+        Map<Item, Booking> nextMap = ListConverter.itemsToBookings(
                 itemRepository.getAllNextBookingsByOwner(ownerId, now));
         //получаем список всех вещей владельца
         List<Item> items = itemRepository.findByOwner_Id(ownerId);

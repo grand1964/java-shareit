@@ -63,7 +63,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     /////////////////////// Поддержка поиска наложений //////////////////////
 
     //поиск истекших бронирований
-    List<Booking> findByBooker_IdAndEndBefore(Long bookerId, Timestamp now);
+    List<Booking> findByBooker_IdAndEndBeforeAndStatusIs(Long bookerId, Timestamp now, Status status);
 
     //поиск для вещи бронирований с заданным статусом, налегающих на заданный промежуток
     List<Booking> findByItem_IdAndEndAfterAndStartBeforeAndStatusIs(
