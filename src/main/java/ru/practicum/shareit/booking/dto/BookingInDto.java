@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
+import java.time.Instant;
 
 @Data
 @NoArgsConstructor
@@ -14,13 +14,12 @@ import java.sql.Timestamp;
 public class BookingInDto {
     private Long itemId;
     @NotNull
-    @Future
     private Timestamp start;
     @NotNull
     private Timestamp end;
 
     public boolean validate() {
         //а это - реальная проверка
-        return (end.after(start));
+        return (end.after(start) && start.after(Timestamp.from(Instant.now())));
     }
 }
