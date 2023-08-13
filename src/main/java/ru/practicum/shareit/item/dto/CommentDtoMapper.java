@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 
 public class CommentDtoMapper {
     public static CommentOutDto toCommentOutDto(Comment comment) {
-        return new CommentOutDto(
-                comment.getId(), comment.getText(), comment.getAuthor().getName(), comment.getCreated());
+        return new CommentOutDto(comment.getId(), comment.getText(),
+                comment.getAuthor().getName(), comment.getCreated().toLocalDateTime());
     }
 
     public static Comment toComment(Item item, User author, CommentInDto commentDto) {
