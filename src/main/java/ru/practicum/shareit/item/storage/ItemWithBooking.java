@@ -5,5 +5,6 @@ import ru.practicum.shareit.item.model.Item;
 
 public interface ItemWithBooking {
     Item getItem();
+
     Booking getBooking();
 }
