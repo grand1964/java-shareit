@@ -13,22 +13,11 @@ import java.util.stream.Collectors;
 
 public class BookingDtoMapper {
     public static BookingOutDto toBookingDto(Booking booking) {
-        String start;
-        String end;
-        if (booking.getStart() == null) {
-            start = "";
-        } else {
-            start = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(booking.getStart());
-        }
-        if (booking.getStart() == null) {
-            end = "";
-        } else {
-            end = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(booking.getEnd());
-        }
         UserOutDto bookerOutDto = UserDtoMapper.toUserOutDto(booking.getBooker());
         ItemOutDto itemOutDto = ItemDtoMapper.toItemOutDto(booking.getItem());
-        return new BookingOutDto(booking.getId(), start, end, booking.getStatus(),
-                bookerOutDto, itemOutDto,
+        return new BookingOutDto(booking.getId(),
+                booking.getStart().toLocalDateTime(), booking.getEnd().toLocalDateTime(),
+                booking.getStatus(), bookerOutDto, itemOutDto,
                 booking.getBooker().getId(), booking.getItem().getId());
     }
 
