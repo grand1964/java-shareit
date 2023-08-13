@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.model.Status;
+import ru.practicum.shareit.item.dto.ItemOutDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.dto.UserOutDto;
 import ru.practicum.shareit.user.model.User;
 
 @Data
@@ -15,8 +17,8 @@ public class BookingOutDto {
     private String start;
     private String end;
     private Status status;
-    private User booker;
-    private Item item;
+    private UserOutDto booker;
+    private ItemOutDto item;
     private Long bookerId;
     private Long itemId;
 }

@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
-import java.time.Instant;
 
 @Data
 @NoArgsConstructor
@@ -23,6 +22,5 @@ public class BookingInDto {
     public boolean validate() {
         //а это - реальная проверка
         return (end.after(start));
-        //return (end.after(start) && start.after(Timestamp.from(Instant.now())));
     }
 }

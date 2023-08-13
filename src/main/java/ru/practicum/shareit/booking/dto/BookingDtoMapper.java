@@ -1,6 +1,10 @@
 package ru.practicum.shareit.booking.dto;
 
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.item.dto.ItemDtoMapper;
+import ru.practicum.shareit.item.dto.ItemOutDto;
+import ru.practicum.shareit.user.dto.UserDtoMapper;
+import ru.practicum.shareit.user.dto.UserOutDto;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -21,8 +25,10 @@ public class BookingDtoMapper {
         } else {
             end = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(booking.getEnd());
         }
+        UserOutDto bookerOutDto = UserDtoMapper.toUserOutDto(booking.getBooker());
+        ItemOutDto itemOutDto = ItemDtoMapper.toItemOutDto(booking.getItem());
         return new BookingOutDto(booking.getId(), start, end, booking.getStatus(),
-                booking.getBooker(), booking.getItem(),
+                bookerOutDto, itemOutDto,
                 booking.getBooker().getId(), booking.getItem().getId());
     }
 
