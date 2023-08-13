@@ -35,23 +35,23 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Booking> getNextBookingOfItem(Long itemId, Timestamp now);
 
     //все старые бронирования вещей одного владельца
-    @Query("select i, b from Booking b join b.item i " +
+    @Query("select i as item, b as booking from Booking b join b.item i " +
             "where i.owner.id = ?1 and b.status = 'APPROVED' and " +
             "b.end = (select max(bb.end) from Booking bb where bb.item = i and bb.start < ?2) "
     )
-    List<Object[]> getAllLastBookingsByOwner(Long ownerId, Timestamp now);
+    List<ItemWithBooking> getAllLastBookingsByOwner(Long ownerId, Timestamp now);
 
     //все будущие бронирования вещей одного владельца
-    @Query("select i, b from Booking b join b.item i " +
+    @Query("select i as item, b as booking from Booking b join b.item i " +
             "where i.owner.id = ?1 and b.status = 'APPROVED' and " +
             "b.start = (select min(bb.start) from Booking bb where bb.item = i and bb.start > ?2) "
     )
-    List<Object[]> getAllNextBookingsByOwner(Long ownerId, Timestamp now);
+    List<ItemWithBooking> getAllNextBookingsByOwner(Long ownerId, Timestamp now);
 
     //все отзывы на все вещи одного владельца
-    @Query("select i, c from Comment c " +
+    @Query("select i as item, c as comment from Comment c " +
             "join c.item i " +
             "where i.owner.id = ?1 "
     )
-    List<Object[]> getAllCommentsByOwner(Long ownerId);
+    List<ItemWithComments> getAllCommentsByOwner(Long ownerId);
 }

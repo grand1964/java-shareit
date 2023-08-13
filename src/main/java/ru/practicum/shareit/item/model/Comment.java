@@ -10,7 +10,6 @@ import java.sql.Timestamp;
 
 @Getter
 @Setter
-@EqualsAndHashCode
 @Entity
 @Table(name = "comments")
 public class Comment {

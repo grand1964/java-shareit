@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -39,8 +40,8 @@ public class CommentServiceImpl implements CommentService {
         Item item = itemRepository.findById(itemId).orElseThrow(
                 () -> new NotFoundException("Недопустимая вещь с идентификатором " + itemId)
         );
-        List<Booking> bookings = bookingRepository.findByBooker_IdAndEndBefore(
-                authorId, Timestamp.from(Instant.now()));
+        List<Booking> bookings = bookingRepository.findByBooker_IdAndEndBeforeAndStatusIs(
+                authorId, Timestamp.from(Instant.now()), Status.APPROVED);
         if (bookings.isEmpty()) {
             throw new BadRequestException("Автор " + authorId + "не арендовал вещь или срок аренды не истек.");
         }
