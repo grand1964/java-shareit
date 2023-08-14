@@ -6,23 +6,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class UserDtoMapper {
-    public static UserDto toUserDto(User user) {
-        return UserDto.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .build();
+    public static UserOutDto toUserOutDto(User user) {
+        return new UserOutDto(user.getId(), user.getName(), user.getEmail());
     }
 
-    public static User toUser(UserDto userDto) {
-        return User.builder()
-                .id(userDto.getId())
-                .name(userDto.getName())
-                .email(userDto.getEmail())
-                .build();
+    public static User toUser(UserInDto userInDto) {
+        User user = new User();
+        user.setName(userInDto.getName());
+        user.setEmail(userInDto.getEmail());
+        return user;
     }
 
-    public static List<UserDto> listToUserDto(List<User> list) {
-        return list.stream().map(UserDtoMapper::toUserDto).collect(Collectors.toList());
+    public static List<UserOutDto> listToUserDto(List<User> list) {
+        return list.stream().map(UserDtoMapper::toUserOutDto).collect(Collectors.toList());
     }
 }

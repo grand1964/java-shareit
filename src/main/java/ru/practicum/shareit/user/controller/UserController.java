@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserOutDto;
+import ru.practicum.shareit.user.dto.UserInDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
@@ -21,14 +22,14 @@ public class UserController {
 
     //получение всех пользователей
     @GetMapping
-    public List<UserDto> getAllUsers() {
+    public List<UserOutDto> getAllUsers() {
         log.info("Запрошено получение всех пользователей.");
         return service.getAllUsers();
     }
 
     //получение пользователя по идентификатору
     @GetMapping(value = "/{id}")
-    public UserDto getUser(@PathVariable("id") long userId) {
+    public UserOutDto getUser(@PathVariable("id") long userId) {
         log.info("Запрошен пользователь с идентификатором " + userId);
         return service.getUserById(userId);
     }
@@ -36,15 +37,15 @@ public class UserController {
     /////////////////////////// Создание и обновление ////////////////////////
 
     @PostMapping
-    public UserDto createUser(@Valid @RequestBody UserDto userDto) {
+    public UserOutDto createUser(@Valid @RequestBody UserInDto userInDto) {
         log.info("Запрошено создание нового пользователя.");
-        return service.createUser(userDto); //здесь поля проверяются автоматически
+        return service.createUser(userInDto); //здесь поля проверяются автоматически
     }
 
     @PatchMapping(value = "/{id}")
-    public UserDto patchUser(@PathVariable("id") long userId, @RequestBody UserDto userDto) {
+    public UserOutDto patchUser(@PathVariable("id") long userId, @RequestBody UserInDto userInDto) {
         log.info("Запрошено обновление пользователя с идентификатором " + userId);
-        return service.patchUser(userId, userDto); //здесь поля проверяются в service
+        return service.patchUser(userId, userInDto); //здесь поля проверяются в service
     }
 
     ///////////////////////////////// Удаление ///////////////////////////////
