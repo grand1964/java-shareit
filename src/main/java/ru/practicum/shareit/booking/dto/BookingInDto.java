@@ -20,7 +20,6 @@ public class BookingInDto {
     private Timestamp end;
 
     public boolean validate() {
-        //а это - реальная проверка
         return (end.after(start));
     }
 }

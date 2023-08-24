@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking.controller;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingInDto;
 import ru.practicum.shareit.booking.dto.BookingOutDto;
@@ -10,12 +11,15 @@ import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping(path = "/bookings")
 @AllArgsConstructor(onConstructor_ = @Autowired)
+@Validated
 public class BookingController {
     private static final String HEADER_NAME = "X-Sharer-User-Id";
     private final BookingService service;
@@ -25,22 +29,26 @@ public class BookingController {
     //получение всех бронирований пользователя
     @GetMapping
     public List<BookingOutDto> getAllBookings(@RequestHeader(HEADER_NAME) Long bookerId,
-                                              @RequestParam(defaultValue = "ALL") String state) {
+                                              @RequestParam(defaultValue = "ALL") String state,
+                                              @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                              @RequestParam(defaultValue = "20") @Positive int size) {
         log.info("Запрошено получение всех бронирований пользователя с идентификатором " + bookerId);
-        return service.getAllBookingsForBooker(bookerId, state);
+        return service.getAllBookingsForBooker(bookerId, state, from, size);
     }
 
     //получение всех бронирований всех вещей одного владельца
     @GetMapping(value = "/owner")
     public List<BookingOutDto> getAllOwnerBookings(@RequestHeader(HEADER_NAME) Long ownerId,
-                                                   @RequestParam(defaultValue = "ALL") String state) {
+                                                   @RequestParam(defaultValue = "ALL") String state,
+                                                   @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                                   @RequestParam(defaultValue = "20") @Positive int size) {
         log.info("Запрошено получение бронирований вещей пользователя с идентификатором " + ownerId);
-        return service.getAllBookingsForOwner(ownerId, state);
+        return service.getAllBookingsForOwner(ownerId, state, from, size);
     }
 
     //получение бронирования по его идентификатору
     @GetMapping(value = "/{id}")
-    public BookingOutDto getItem(@PathVariable("id") long bookingId, @RequestHeader(HEADER_NAME) Long ownerId) {
+    public BookingOutDto getBooking(@PathVariable("id") long bookingId, @RequestHeader(HEADER_NAME) Long ownerId) {
         log.info("Запрошены данные бронирования с идентификатором " + bookingId);
         return service.getBookingById(bookingId, ownerId);
     }
@@ -49,17 +57,17 @@ public class BookingController {
 
     //создание новой брони
     @PostMapping
-    public BookingOutDto createItem(@RequestHeader(HEADER_NAME) Long bookerId,
-                                    @Valid @RequestBody BookingInDto bookingInDto) {
+    public BookingOutDto createBooking(@RequestHeader(HEADER_NAME) Long bookerId,
+                                       @Valid @RequestBody BookingInDto bookingInDto) {
         log.info("Запрошено создание новой брони пользователем с идентификатором " + bookerId);
         return service.createBooking(bookerId, bookingInDto);
     }
 
     //подтверждение запрошенной ранее брони владельцем
     @PatchMapping(value = "/{id}")
-    public BookingOutDto patchItem(@PathVariable("id") long bookingId,
-                                   @Valid @NotNull @RequestHeader(HEADER_NAME) Long ownerId,
-                                   @Valid @NotNull @RequestParam Boolean approved) {
+    public BookingOutDto confirmBooking(@PathVariable("id") long bookingId,
+                                        @Valid @NotNull @RequestHeader(HEADER_NAME) Long ownerId,
+                                        @Valid @NotNull @RequestParam Boolean approved) {
         log.info("Владелец " + ownerId + " согласовывает бронь с идентификатором " + bookingId);
         return service.confirmBooking(bookingId, ownerId, approved);
     }
