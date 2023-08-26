@@ -46,4 +46,8 @@ public class TestUtils {
     public static Timestamp fromOffset(Long days) {
         return Timestamp.from(Instant.now().plusSeconds(days * 24 * 3600));
     }
+
+    public static Timestamp offsetTime(Timestamp now, Long days) {
+        return Timestamp.from(now.toInstant().plusSeconds(days * 24 * 3600));
+    }
 }

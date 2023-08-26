@@ -93,7 +93,7 @@ public class ItemPatchTests {
                 });
         //метод itemRepository.findById возвращает созданную вещь
         Mockito
-                .when(itemRepository.findById(anyLong()))
+                .when(itemRepository.findById(itemId))
                 .thenReturn(Optional.of(
                         new Item(itemId, itemName, itemDescription, true, owner, null)
                 ));
