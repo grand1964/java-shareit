@@ -12,11 +12,14 @@ import ru.practicum.shareit.item.model.Item;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
     ////////////////////////////////// Поиск /////////////////////////////////
+
+    Optional<Item> findById(long itemId);
 
     //поиск всех вещей заданного владельца
     Page<Item> findByOwner_Id(long ownerId, Pageable pageable);

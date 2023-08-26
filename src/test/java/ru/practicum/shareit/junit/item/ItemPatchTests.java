@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static ru.practicum.shareit.junit.item.TestUtils.createItemInDto;
 
 @ExtendWith(MockitoExtension.class)
-public class ItemTests {
+public class ItemPatchTests {
     private final long itemId = 1L;
     private final String itemName = "notebook";
     private final String itemDescription = "ASUS";
@@ -93,7 +93,7 @@ public class ItemTests {
                 });
         //метод itemRepository.findById возвращает созданную вещь
         Mockito
-                .when(itemRepository.findById(itemId))
+                .when(itemRepository.findById(anyLong()))
                 .thenReturn(Optional.of(
                         new Item(itemId, itemName, itemDescription, true, owner, null)
                 ));
