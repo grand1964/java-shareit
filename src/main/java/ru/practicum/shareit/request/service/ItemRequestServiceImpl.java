@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.common.convert.ListConverter;
 import ru.practicum.shareit.common.convert.PairToReturn;
+import ru.practicum.shareit.common.exception.BadRequestException;
 import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDtoMapper;
 import ru.practicum.shareit.item.model.Item;
@@ -21,6 +22,7 @@ import ru.practicum.shareit.request.storage.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserRepository;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -127,5 +129,12 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         ItemRequest request = requestRepository.save(ItemRequestDtoMapper.toItemRequest(author, requestInDto));
         log.info("Создан новый запрос с идентификатором " + request.getId());
         return ItemRequestDtoMapper.toItemRequestCreationDto(request);
+    }
+
+    public void updateCreated(long requestId, long additionalMillis) {
+        ItemRequest request = requestRepository.findById(requestId).orElseThrow(
+                () -> new BadRequestException("Запрос с идентификатором " + requestId + " не найден.")
+        );
+        request.setCreated(Timestamp.from(request.getCreated().toInstant().plusMillis(additionalMillis)));
     }
 }

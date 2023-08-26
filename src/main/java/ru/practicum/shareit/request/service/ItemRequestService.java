@@ -19,4 +19,7 @@ public interface ItemRequestService {
 
     //создание нового запроса
     ItemRequestOutCreationDto createRequest(Long authorId, ItemRequestInDto requestInDto);
+
+    //нужно для тестов
+    void updateCreated(long requestId, long additionalMillis);
 }

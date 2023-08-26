@@ -7,6 +7,8 @@ import ru.practicum.shareit.user.dto.UserInDto;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 public class TestUtils {
 
@@ -32,5 +34,9 @@ public class TestUtils {
             throw new RuntimeException(e);
         }
         return stringBuilder.toString();
+    }
+
+    public static Timestamp fromOffset(Long days) {
+        return Timestamp.from(Instant.now().plusSeconds((long) days * 24 * 3600));
     }
 }

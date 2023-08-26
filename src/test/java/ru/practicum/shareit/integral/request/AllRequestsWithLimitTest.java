@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.practicum.shareit.item.dto.ItemOutRequestDto;
@@ -20,8 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Transactional
 @SpringBootTest
+@AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class RequestTests {
+public class AllRequestsWithLimitTest {
     private static final int USER_COUNT = 10;
     private static final int REQUEST_COUNT = 4;
     private static final long REQUESTER_ID = 5;
@@ -29,6 +31,7 @@ public class RequestTests {
     private final ItemService itemService;
     private final ItemRequestService requestService;
     private final JdbcTemplate jdbcTemplate;
+
 
     @BeforeEach
     public void setUp() throws InterruptedException {
@@ -40,7 +43,7 @@ public class RequestTests {
         for (long i = 1; i <= REQUEST_COUNT; i++) {
             requestService.createRequest(REQUESTER_ID,
                     TestUtils.createRequestDto("request" + i));
-            Thread.sleep(10);
+            requestService.updateCreated(i, 100 * i); //разносим времена создания запросов
         }
         //создаем вещи
         int ind = 1;
@@ -58,27 +61,6 @@ public class RequestTests {
         jdbcTemplate.update(TestUtils.getSqlForReset());
     }
 
-    ///////////////////////////// Тесты запросов /////////////////////////////
-
-    @Test
-    public void normalRequestByIdTest() {
-        ItemRequestOutDto request = requestService.get(4, REQUESTER_ID);
-        List<ItemOutRequestDto> items = request.getItems();
-        assertEquals(items.size(), 4);
-    }
-
-    @Test
-    public void normalRequestsByOwnerTest() {
-        List<ItemRequestOutDto> requests = requestService.getAllByOwner(REQUESTER_ID);
-        assertEquals(requests.size(), 4); //всего 4 запроса
-        for (int i = 0; i < 4; i++) {
-            ItemRequestOutDto request = requests.get(i);
-            assertEquals(request.getId(), 4 - i); //порядок - от поздних к ранним
-            List<ItemOutRequestDto> items = request.getItems();
-            assertEquals(items.size(), 4 - i); //число вещей тоже уменьшается
-        }
-    }
-
     @Test
     public void getAllRequestsWithLimitTest() {
         int from = 0;
@@ -90,34 +72,6 @@ public class RequestTests {
             assertEquals(request.getId(), 4 - i); //порядок - от поздних к ранним
             List<ItemOutRequestDto> items = request.getItems();
             assertEquals(items.size(), 4 - i); //число вещей тоже уменьшается
-        }
-    }
-
-    @Test
-    public void getAllRequestsWithoutBoundsTest() {
-        int from = 0;
-        int size = 4;
-        List<ItemRequestOutDto> requests = requestService.getAll(6, from, size);
-        assertEquals(requests.size(), size); //все запросы должны быть
-        for (int i = 0; i < size; i++) {
-            ItemRequestOutDto request = requests.get(i);
-            assertEquals(request.getId(), size - i); //порядок - от поздних к ранним
-            List<ItemOutRequestDto> items = request.getItems();
-            assertEquals(items.size(), size - i); //число вещей тоже уменьшается
-        }
-    }
-
-    @Test
-    public void getAllRequestsWithLimitAndOffsetTest() {
-        int from = 3;
-        int size = 2;
-        List<ItemRequestOutDto> requests = requestService.getAll(6, from, size);
-        assertEquals(requests.size(), 2); //всего 2 запроса, остальные обрезаны
-        for (int i = 0; i < size; i++) {
-            ItemRequestOutDto request = requests.get(i);
-            assertEquals(request.getId(), 2 - i); //порядок - от поздних к ранним
-            List<ItemOutRequestDto> items = request.getItems();
-            assertEquals(items.size(), 2 - i); //число вещей тоже уменьшается
         }
     }
 }
