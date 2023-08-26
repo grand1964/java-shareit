@@ -14,7 +14,7 @@ import javax.validation.ConstraintViolationException;
 @Slf4j
 @RestControllerAdvice(basePackages = "ru.practicum.shareit")
 public class ErrorHandler {
-    @ExceptionHandler({ValidateException.class, BadRequestException.class, ConstraintViolationException.class,
+    @ExceptionHandler({BadRequestException.class, ConstraintViolationException.class,
             MethodArgumentNotValidException.class, MethodArgumentTypeMismatchException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidate(RuntimeException e) {

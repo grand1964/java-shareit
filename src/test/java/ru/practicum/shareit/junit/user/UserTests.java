@@ -12,6 +12,7 @@ import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 import ru.practicum.shareit.user.storage.UserRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,6 +42,30 @@ public class UserTests {
                     user.setId(id);
                     return user;
                 });
+    }
+
+    ///////////////////////////// Тесты создания /////////////////////////////
+
+    @Test
+    public void createNewUserTest() {
+        //создаем требуемого пользователя
+        userService.createUser(TestUtils.createUserDto(name, email));
+        //проверяем результат
+        UserOutDto newUserDto = userService.getUserById(id);
+        assertEquals(newUserDto.getId(), 1);
+        assertEquals(newUserDto.getName(), "Vasya");
+        assertEquals(newUserDto.getEmail(), "vasya@com");
+        //метод findAll возвращает список пользователей
+        Mockito
+                .when(userRepository.findAll())
+                .thenReturn(List.of(new User(id, name, email)));
+        List<UserOutDto> users = userService.getAllUsers();
+        assertEquals(users.size(), 1);
+        assertEquals(users.get(0).getId(), id);
+        assertEquals(users.get(0).getName(), name);
+        assertEquals(users.get(0).getEmail(), email);
+        //сохранение - 1 раз
+        Mockito.verify(userRepository, Mockito.times(1)).save(any(User.class));
     }
 
     //////////////////////////// Тесты обновления ////////////////////////////

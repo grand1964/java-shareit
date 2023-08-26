@@ -21,13 +21,13 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 
@@ -52,6 +52,31 @@ public class BookingTests {
     @BeforeEach
     public void setUp() {
         bookingService = new BookingServiceImpl(userRepository, itemRepository, bookingRepository);
+    }
+
+    ////////////////////////////// Тесты модели //////////////////////////////
+
+    @Test
+    public void comparingBookingsTest() {
+        //создаем владельца вещи
+        User owner = new User(ownerId, userName, email);
+        //создаем заказчика
+        User booker = new User(bookerId, userName, email);
+        //создаем вещь
+        Item item = new Item(itemId, itemName, itemDescription, true, owner, null);
+        //создаем даты
+        Timestamp start = Timestamp.from(Instant.now().plusSeconds(3600));
+        Timestamp end = Timestamp.from(Instant.now().plusSeconds(7200));
+        //создаем бронирования
+        Booking booking1 = new Booking(1L, start, end, item, booker, Status.WAITING);
+        Booking booking2 = new Booking(2L, start, end, item, booker, Status.WAITING);
+        Booking booking3 = new Booking(2L,
+                Timestamp.from(Instant.now().minusSeconds(7200)),
+                Timestamp.from(Instant.now().minusSeconds(3600)),
+                item, booker, Status.APPROVED);
+        assertEquals(booking1.hashCode(), 1);
+        assertEquals(booking2, booking3);
+        assertNotEquals(booking2, booking1);
     }
 
     ///////////////////////////// Тесты создания /////////////////////////////

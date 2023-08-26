@@ -40,6 +40,7 @@ public class RequestTests {
         for (long i = 1; i <= REQUEST_COUNT; i++) {
             requestService.createRequest(REQUESTER_ID,
                     TestUtils.createRequestDto("request" + i));
+            Thread.sleep(10);
         }
         //создаем вещи
         int ind = 1;

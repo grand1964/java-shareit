@@ -8,15 +8,18 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.item.storage.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.request.service.ItemRequestServiceImpl;
 import ru.practicum.shareit.request.storage.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserRepository;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,6 +38,25 @@ public class RequestTests {
     @BeforeEach
     public void setUp() {
         requestService = new ItemRequestServiceImpl(userRepository, itemRepository, requestRepository);
+    }
+
+    ////////////////////////////// Тесты модели //////////////////////////////
+
+    @Test
+    public void comparingBookingsTest() {
+        //создаем заказчиков
+        User author1 = new User(authorId, "Vasya", "vasya@com");
+        User author2 = new User(userId, "Petya", "petya@com");
+        //создаем даты
+        Timestamp created1 = Timestamp.from(Instant.now().plusSeconds(3600));
+        Timestamp created2 = Timestamp.from(Instant.now().plusSeconds(7200));
+        //создаем запросы
+        ItemRequest request1 = new ItemRequest(1L, "Request1", author1, created1);
+        ItemRequest request2 = new ItemRequest(2L, "Request1", author1, created1);
+        ItemRequest request3 = new ItemRequest(1L, "Request2", author2, created2);
+        assertEquals(request1.hashCode(), 1);
+        assertEquals(request1, request3);
+        assertNotEquals(request1, request2);
     }
 
     ///////////////////////////// Тесты создания /////////////////////////////
