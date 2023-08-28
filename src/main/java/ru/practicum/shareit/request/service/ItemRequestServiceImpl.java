@@ -80,20 +80,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         List<ItemRequest> requestsPage = requestRepository.findAll(pageable).getContent();
         //делаем выборку пар (запрос, вещь) для запросов из полученной страницы
         List<PairToReturn<ItemRequest, Item>> pairs = requestRepository.getAllRequestPairs(userId, requestsPage);
-        //генерируем из нее список запросов с результатами
-        Map<ItemRequest, List<Item>> requests = ListConverter.keyToValues(pairs);
-        //создаем и заполняем выходной список
-        List<ItemRequestOutDto> listDto = new ArrayList<>();
-        for (ItemRequest request : requests.keySet()) {
-            //извлекаем очередной запрос и преобразуем его в dto
-            ItemRequestOutDto requestOutDto = ItemRequestDtoMapper.toItemRequestDto(request);
-            //преобразуем результаты запроса в dto и сохраняем их в выходном запросе
-            requestOutDto.setItems(ItemDtoMapper.listToItemRequestDto(requests.get(request)));
-            //запоминаем выходной запрос
-            listDto.add(requestOutDto);
-        }
-        //сортируем по убыванию даты создания и возвращаем
-        return listDto.stream().sorted(requestComparator).collect(Collectors.toList());
+        //обрабатываем пары и возвращаем результат
+        return processPairs(pairs);
     }
 
     @Override
@@ -104,20 +92,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         }
         //делаем выборку пар (запрос, вещь) для заданного хозяина запросов
         List<PairToReturn<ItemRequest, Item>> pairs = requestRepository.getAllRequestPairsByOwner(ownerId);
-        //генерируем из нее список запросов с результатами
-        Map<ItemRequest, List<Item>> requests = ListConverter.keyToValues(pairs);
-        //создаем и заполняем выходной список
-        List<ItemRequestOutDto> listDto = new ArrayList<>();
-        for (ItemRequest request : requests.keySet()) {
-            //извлекаем очередной запрос и преобразуем его в dto
-            ItemRequestOutDto requestOutDto = ItemRequestDtoMapper.toItemRequestDto(request);
-            //преобразуем результаты запроса в dto и сохраняем их в выходном запросе
-            requestOutDto.setItems(ItemDtoMapper.listToItemRequestDto(requests.get(request)));
-            //запоминаем выходной запрос
-            listDto.add(requestOutDto);
-        }
-        //сортируем по убыванию даты создания и возвращаем
-        return listDto.stream().sorted(requestComparator).collect(Collectors.toList());
+        //обрабатываем пары и возвращаем результат
+        return processPairs(pairs);
     }
 
     @Override
@@ -136,5 +112,24 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 () -> new BadRequestException("Запрос с идентификатором " + requestId + " не найден.")
         );
         request.setCreated(Timestamp.from(request.getCreated().toInstant().plusMillis(additionalMillis)));
+    }
+
+    ////////////////////////// Обработка списка пар //////////////////////////
+
+    private List<ItemRequestOutDto> processPairs(List<PairToReturn<ItemRequest, Item>> pairs) {
+        //преобразуем список пар в запросы с результатами
+        Map<ItemRequest, List<Item>> requests = ListConverter.keyToValues(pairs);
+        //создаем и заполняем выходной список
+        List<ItemRequestOutDto> listDto = new ArrayList<>();
+        for (ItemRequest request : requests.keySet()) {
+            //извлекаем очередной запрос и преобразуем его в dto
+            ItemRequestOutDto requestOutDto = ItemRequestDtoMapper.toItemRequestDto(request);
+            //преобразуем результаты запроса в dto и сохраняем их в выходном запросе
+            requestOutDto.setItems(ItemDtoMapper.listToItemRequestDto(requests.get(request)));
+            //запоминаем выходной запрос
+            listDto.add(requestOutDto);
+        }
+        //сортируем по убыванию даты создания и возвращаем
+        return listDto.stream().sorted(requestComparator).collect(Collectors.toList());
     }
 }

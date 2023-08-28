@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -108,7 +109,7 @@ public class ItemControllerMvcTest {
 
     @Test
     void getAllItemsTest() throws Exception {
-        when(itemService.getAllItems(anyLong(), anyInt(), anyInt()))
+        when(itemService.getAllItems(anyLong(), any(Pageable.class)))
                 .thenReturn(List.of(itemOutBookedDto));
 
         mvc.perform(get("/items")
@@ -207,7 +208,7 @@ public class ItemControllerMvcTest {
 
     @Test
     void searchItemsTest() throws Exception {
-        when(itemService.searchItems(anyString(), anyInt(), anyInt()))
+        when(itemService.searchItems(anyString(), any(Pageable.class)))
                 .thenReturn(List.of(itemOutDto));
 
         mvc.perform(get("/items/search")

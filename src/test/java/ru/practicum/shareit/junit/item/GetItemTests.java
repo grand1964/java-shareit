@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemOutBookedDto;
 import ru.practicum.shareit.item.model.Item;
@@ -51,13 +52,13 @@ public class GetItemTests {
     @Test
     public void getAllItemsWithBadOwnerTest() {
         long ownerId = 1L;
-        int from = 0;
-        int size = 20;
         //метод findById с аргументом ownerId возвращает владельца
         Mockito
                 .when(userRepository.existsById(ownerId))
                 .thenReturn(false);
-        assertThrows(NotFoundException.class, () -> itemService.getAllItems(ownerId, from, size));
+        PageRequest pageable = PageRequest.of(0, 20);
+        assertThrows(NotFoundException.class, () -> itemService.getAllItems(ownerId,
+                PageRequest.of(0, 20)));
     }
 
     @Test

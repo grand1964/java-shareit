@@ -6,11 +6,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.practicum.shareit.booking.dto.BookingInDto;
 import ru.practicum.shareit.booking.dto.BookingOutDto;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.booking.storage.BookingRepository;
+import ru.practicum.shareit.common.exception.BadRequestException;
 import ru.practicum.shareit.item.dto.ItemOutBookedDto;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.service.UserService;
@@ -30,6 +34,7 @@ public class BookingTests {
     private final UserService userService;
     private final ItemService itemService;
     private final BookingService bookingService;
+    private final BookingRepository bookingRepository;
     private final JdbcTemplate jdbcTemplate;
 
     @BeforeEach
@@ -137,36 +142,37 @@ public class BookingTests {
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(3L, 3L, 4L)).getId();
         bookingService.confirmBooking(bookingId, 2L, false);
-        bookingService.updateBounds(bookingId, TestUtils.fromOffset(-1L), TestUtils.fromOffset(1L));
+        updateBounds(bookingId, TestUtils.fromOffset(-1L), TestUtils.fromOffset(1L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(4L, 5L, 6L)).getId();
         bookingService.confirmBooking(bookingId, 3L, true);
-        bookingService.updateBounds(bookingId, TestUtils.fromOffset(-2L), TestUtils.fromOffset(-1L));
+        updateBounds(bookingId, TestUtils.fromOffset(-2L), TestUtils.fromOffset(-1L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(5L, 7L, 8L)).getId();
         bookingService.confirmBooking(bookingId, 3L, false);
-        bookingService.updateBounds(bookingId, TestUtils.fromOffset(2L), TestUtils.fromOffset(3L));
+        updateBounds(bookingId, TestUtils.fromOffset(2L), TestUtils.fromOffset(3L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(6L, 9L, 10L)).getId();
         bookingService.confirmBooking(bookingId, 3L, true);
-        bookingService.updateBounds(bookingId, TestUtils.fromOffset(-3L), TestUtils.fromOffset(3L));
+        updateBounds(bookingId, TestUtils.fromOffset(-3L), TestUtils.fromOffset(3L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(7L, 11L, 12L)).getId();
         bookingService.confirmBooking(bookingId, 4L, false);
-        bookingService.updateBounds(bookingId, TestUtils.fromOffset(-5L), TestUtils.fromOffset(-3L));
+        updateBounds(bookingId, TestUtils.fromOffset(-5L), TestUtils.fromOffset(-3L));
         //запрашиваем бронирования пользователя по state
+        PageRequest pageable = PageRequest.of(from / size, size);
         List<BookingOutDto> bookings = bookingService.getAllBookingsForBooker(
-                bookerId, "CURRENT", from, size);
+                bookerId, "CURRENT", pageable);
         assertEquals(bookings.size(), 2);
-        bookings = bookingService.getAllBookingsForBooker(bookerId, "FUTURE", from, size);
+        bookings = bookingService.getAllBookingsForBooker(bookerId, "FUTURE", pageable);
         assertEquals(bookings.size(), 2);
-        bookings = bookingService.getAllBookingsForBooker(bookerId, "PAST", from, size);
+        bookings = bookingService.getAllBookingsForBooker(bookerId, "PAST", pageable);
         assertEquals(bookings.size(), 2);
-        bookings = bookingService.getAllBookingsForBooker(bookerId, "ALL", from, size);
+        bookings = bookingService.getAllBookingsForBooker(bookerId, "ALL", pageable);
         assertEquals(bookings.size(), 6);
-        bookings = bookingService.getAllBookingsForBooker(bookerId, "WAITING", from, size);
+        bookings = bookingService.getAllBookingsForBooker(bookerId, "WAITING", pageable);
         assertEquals(bookings.size(), 1);
-        bookings = bookingService.getAllBookingsForBooker(bookerId, "REJECTED", from, size);
+        bookings = bookingService.getAllBookingsForBooker(bookerId, "REJECTED", pageable);
         assertEquals(bookings.size(), 3);
     }
 
@@ -183,36 +189,37 @@ public class BookingTests {
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(7L, 3L, 4L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, false);
-        bookingService.updateBounds(bookingId, TestUtils.fromOffset(-1L), TestUtils.fromOffset(1L));
+        updateBounds(bookingId, TestUtils.fromOffset(-1L), TestUtils.fromOffset(1L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(7L, 5L, 6L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        bookingService.updateBounds(bookingId, TestUtils.fromOffset(-2L), TestUtils.fromOffset(-1L));
+        updateBounds(bookingId, TestUtils.fromOffset(-2L), TestUtils.fromOffset(-1L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(8L, 7L, 8L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, false);
-        bookingService.updateBounds(bookingId, TestUtils.fromOffset(2L), TestUtils.fromOffset(3L));
+        updateBounds(bookingId, TestUtils.fromOffset(2L), TestUtils.fromOffset(3L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(8L, 9L, 10L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        bookingService.updateBounds(bookingId, TestUtils.fromOffset(-3L), TestUtils.fromOffset(3L));
+        updateBounds(bookingId, TestUtils.fromOffset(-3L), TestUtils.fromOffset(3L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(8L, 11L, 12L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, false);
-        bookingService.updateBounds(bookingId, TestUtils.fromOffset(-5L), TestUtils.fromOffset(-3L));
+        updateBounds(bookingId, TestUtils.fromOffset(-5L), TestUtils.fromOffset(-3L));
         //запрашиваем бронирования вещей владельца по state
+        PageRequest pageable = PageRequest.of(from / size, size);
         List<BookingOutDto> bookings = bookingService.getAllBookingsForOwner(
-                ownerId, "CURRENT", from, size);
+                ownerId, "CURRENT", pageable);
         assertEquals(bookings.size(), 2);
-        bookings = bookingService.getAllBookingsForOwner(ownerId, "FUTURE", from, size);
+        bookings = bookingService.getAllBookingsForOwner(ownerId, "FUTURE", pageable);
         assertEquals(bookings.size(), 2);
-        bookings = bookingService.getAllBookingsForOwner(ownerId, "PAST", from, size);
+        bookings = bookingService.getAllBookingsForOwner(ownerId, "PAST", pageable);
         assertEquals(bookings.size(), 2);
-        bookings = bookingService.getAllBookingsForOwner(ownerId, "WAITING", from, size);
+        bookings = bookingService.getAllBookingsForOwner(ownerId, "WAITING", pageable);
         assertEquals(bookings.size(), 1);
-        bookings = bookingService.getAllBookingsForOwner(ownerId, "REJECTED", from, size);
+        bookings = bookingService.getAllBookingsForOwner(ownerId, "REJECTED", pageable);
         assertEquals(bookings.size(), 3);
-        bookings = bookingService.getAllBookingsForOwner(ownerId, "ALL", from, size);
+        bookings = bookingService.getAllBookingsForOwner(ownerId, "ALL", pageable);
         assertEquals(bookings.size(), 6);
     }
 
@@ -230,22 +237,23 @@ public class BookingTests {
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 1L, 2L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        bookingService.updateBounds(bookingId, TestUtils.fromOffset(-5L), TestUtils.fromOffset(-4L));
+        updateBounds(bookingId, TestUtils.fromOffset(-5L), TestUtils.fromOffset(-4L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 1L, 2L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        Timestamp lastTime = bookingService.updateBounds(bookingId,
+        Timestamp lastTime = updateBounds(bookingId,
                 TestUtils.fromOffset(-3L), TestUtils.fromOffset(-1L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 1L, 2L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        Timestamp nextTime = bookingService.updateBounds(bookingId,
+        Timestamp nextTime = updateBounds(bookingId,
                 TestUtils.fromOffset(1L), TestUtils.fromOffset(3L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 4L, 5L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
         //читаем список вещей владельца
-        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, from, size);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, pageable);
         assertEquals(items.size(), 4);
         assertEquals(items.get(0).getLastBooking().getStart().getHour(),
                 lastTime.toLocalDateTime().getHour());
@@ -265,24 +273,25 @@ public class BookingTests {
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 1L, 2L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        bookingService.updateBounds(bookingId, TestUtils.fromOffset(-5L), TestUtils.fromOffset(-4L));
+        updateBounds(bookingId, TestUtils.fromOffset(-5L), TestUtils.fromOffset(-4L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 1L, 2L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        bookingService.updateBounds(bookingId,
+        updateBounds(bookingId,
                 TestUtils.fromOffset(-3L), TestUtils.fromOffset(-2L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 1L, 2L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        Timestamp lastTime = bookingService.updateBounds(bookingId,
+        Timestamp lastTime = updateBounds(bookingId,
                 TestUtils.fromOffset(-1L), TestUtils.fromOffset(3L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 4L, 5L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        Timestamp nextTime = bookingService.updateBounds(bookingId,
+        Timestamp nextTime = updateBounds(bookingId,
                 TestUtils.fromOffset(4L), TestUtils.fromOffset(5L));
         //читаем список вещей владельца
-        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, from, size);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, pageable);
         assertEquals(items.size(), 4);
         assertEquals(items.get(0).getLastBooking().getStart().getHour(),
                 lastTime.toLocalDateTime().getHour());
@@ -302,14 +311,15 @@ public class BookingTests {
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 1L, 2L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        bookingService.updateBounds(bookingId, TestUtils.fromOffset(-5L), TestUtils.fromOffset(-4L));
+        updateBounds(bookingId, TestUtils.fromOffset(-5L), TestUtils.fromOffset(-4L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 1L, 2L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        Timestamp lastTime = bookingService.updateBounds(bookingId,
+        Timestamp lastTime = updateBounds(bookingId,
                 TestUtils.fromOffset(-3L), TestUtils.fromOffset(-1L));
         //читаем список вещей владельца
-        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, from, size);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, pageable);
         assertEquals(items.size(), 4);
         assertEquals(items.get(0).getLastBooking().getStart().getHour(),
                 lastTime.toLocalDateTime().getHour());
@@ -328,18 +338,31 @@ public class BookingTests {
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 1L, 2L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        Timestamp lastTime = bookingService.updateBounds(bookingId,
+        Timestamp lastTime = updateBounds(bookingId,
                 TestUtils.fromOffset(1L), TestUtils.fromOffset(3L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 4L, 6L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        bookingService.updateBounds(bookingId,
+        updateBounds(bookingId,
                 TestUtils.fromOffset(4L), TestUtils.fromOffset(6L));
         //читаем список вещей владельца
-        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, from, size);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, pageable);
         assertEquals(items.size(), 4);
         assertNull(items.get(0).getLastBooking());
         assertEquals(items.get(0).getNextBooking().getStart().getHour(),
                 lastTime.toLocalDateTime().getHour());
+    }
+
+    /////////////////////// Коррекция дат бронирований //////////////////////
+
+    private Timestamp updateBounds(Long bookingId, Timestamp start, Timestamp end) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(
+                () -> new BadRequestException("Бронь с идентификатором " + bookingId + " не найдена.")
+        );
+        booking.setStart(start);
+        booking.setEnd(end);
+        bookingRepository.save(booking);
+        return start;
     }
 }

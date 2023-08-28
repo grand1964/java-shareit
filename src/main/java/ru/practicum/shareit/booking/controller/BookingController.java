@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking.controller;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingInDto;
@@ -33,7 +34,8 @@ public class BookingController {
                                               @RequestParam(defaultValue = "0") @PositiveOrZero int from,
                                               @RequestParam(defaultValue = "20") @Positive int size) {
         log.info("Запрошено получение всех бронирований пользователя с идентификатором " + bookerId);
-        return service.getAllBookingsForBooker(bookerId, state, from, size);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        return service.getAllBookingsForBooker(bookerId, state, pageable);
     }
 
     //получение всех бронирований всех вещей одного владельца
@@ -43,7 +45,8 @@ public class BookingController {
                                                    @RequestParam(defaultValue = "0") @PositiveOrZero int from,
                                                    @RequestParam(defaultValue = "20") @Positive int size) {
         log.info("Запрошено получение бронирований вещей пользователя с идентификатором " + ownerId);
-        return service.getAllBookingsForOwner(ownerId, state, from, size);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        return service.getAllBookingsForOwner(ownerId, state, pageable);
     }
 
     //получение бронирования по его идентификатору

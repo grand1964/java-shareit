@@ -6,8 +6,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.booking.storage.BookingRepository;
+import ru.practicum.shareit.common.exception.BadRequestException;
 import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemOutBookedDto;
 import ru.practicum.shareit.item.dto.ItemOutDto;
@@ -29,6 +33,7 @@ public class ItemTests {
     private final UserService userService;
     private final ItemService itemService;
     private final BookingService bookingService;
+    private final BookingRepository bookingRepository;
     private final CommentService commentService;
     private final JdbcTemplate jdbcTemplate;
 
@@ -55,7 +60,8 @@ public class ItemTests {
                 TestUtils.createItemInDto("notebook", "ASUS", true));
         itemService.createItem(ownerId,
                 TestUtils.createItemInDto("drill", "Makita", null));
-        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, from, size);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, pageable);
         assertEquals(items.size(), 2);
         assertEquals(items.get(0).getName(), "notebook");
         assertEquals(items.get(0).getAvailable(), true);
@@ -81,7 +87,8 @@ public class ItemTests {
         itemService.createItem(2L,
                 TestUtils.createItemInDto("book", "About Spring ", true));
         //получаем список владельца 1
-        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, from, size);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, pageable);
         assertEquals(items.size(), 3);
         assertEquals(items.get(0).getName(), "notebook");
         assertEquals(items.get(1).getDescription(), "Samsung");
@@ -105,17 +112,18 @@ public class ItemTests {
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 1L, 2L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        bookingService.updateBounds(bookingId,
+        updateBounds(bookingId,
                 TestUtils.offsetTime(now,-2L), TestUtils.offsetTime(now, -1L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 1L, 2L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        bookingService.updateBounds(bookingId,
+        updateBounds(bookingId,
                 TestUtils.offsetTime(now,-1L), TestUtils.offsetTime(now, 1L));
         //создаем комментарий от заказчика
         commentService.createComment(itemId, bookingId, TestUtils.createCommentInDto("Good item"));
         //получаем список владельца 1
-        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, from, size);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, pageable);
         assertEquals(items.size(), 1);
         assertEquals(items.get(0).getName(), "notebook");
         assertEquals(items.get(0).getDescription(), "ASUS");
@@ -144,18 +152,19 @@ public class ItemTests {
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 3L, 4L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        bookingService.updateBounds(bookingId,
+        updateBounds(bookingId,
                 TestUtils.offsetTime(now,-2L), TestUtils.offsetTime(now, -1L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 3L, 4L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        bookingService.updateBounds(bookingId,
+        updateBounds(bookingId,
                 TestUtils.offsetTime(now,1L), TestUtils.offsetTime(now, 2L));
         //создаем два комментария от заказчика
         commentService.createComment(itemId, bookingId, TestUtils.createCommentInDto("Good item"));
         commentService.createComment(itemId, bookingId, TestUtils.createCommentInDto("Very good"));
         //получаем список владельца 1
-        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, from, size);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, pageable);
         assertEquals(items.size(), 1);
         assertEquals(items.get(0).getName(), "notebook");
         assertEquals(items.get(0).getDescription(), "ASUS");
@@ -182,12 +191,12 @@ public class ItemTests {
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 3L, 4L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        bookingService.updateBounds(bookingId,
+        updateBounds(bookingId,
                 TestUtils.offsetTime(now,-2L), TestUtils.offsetTime(now, -1L));
         bookingId = bookingService.createBooking(bookerId,
                 TestUtils.createBookingInDto(itemId, 3L, 4L)).getId();
         bookingService.confirmBooking(bookingId, ownerId, true);
-        bookingService.updateBounds(bookingId,
+        updateBounds(bookingId,
                 TestUtils.offsetTime(now,1L), TestUtils.offsetTime(now, 2L));
         //создаем два комментария от заказчика
         commentService.createComment(itemId, bookingId, TestUtils.createCommentInDto("Good item"));
@@ -229,7 +238,7 @@ public class ItemTests {
         itemService.createItem(ownerId,
                 TestUtils.createItemInDto("smartphone", "Samsung", true));
         itemService.deleteAllItems();
-        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, 0,20);
+        List<ItemOutBookedDto> items = itemService.getAllItems(ownerId, PageRequest.of(0, 20));
         assertEquals(items.size(), 0);
     }
 
@@ -241,7 +250,7 @@ public class ItemTests {
         //создаем вещь одного владельца
         itemService.createItem(ownerId,
                 TestUtils.createItemInDto("notebook", "ASUS", true));
-        List<ItemOutDto> searched = itemService.searchItems("", 0, 20);
+        List<ItemOutDto> searched = itemService.searchItems("", PageRequest.of(0, 20));
         assertEquals(searched.size(), 0);
     }
 
@@ -251,11 +260,23 @@ public class ItemTests {
         //создаем вещь одного владельца
         itemService.createItem(ownerId,
                 TestUtils.createItemInDto("notebook", "ASUS", true));
-        List<ItemOutDto> searched = itemService.searchItems("book", 0, 20);
+        List<ItemOutDto> searched = itemService.searchItems("book", PageRequest.of(0, 20));
         assertEquals(searched.size(), 1);
         assertEquals(searched.get(0).getId(), 1);
-        searched = itemService.searchItems("su", 0, 20);
+        searched = itemService.searchItems("su", PageRequest.of(0, 20));
         assertEquals(searched.size(), 1);
         assertEquals(searched.get(0).getDescription(), "ASUS");
+    }
+
+    /////////////////////// Коррекция дат бронирований //////////////////////
+
+    private Timestamp updateBounds(Long bookingId, Timestamp start, Timestamp end) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(
+                () -> new BadRequestException("Бронь с идентификатором " + bookingId + " не найдена.")
+        );
+        booking.setStart(start);
+        booking.setEnd(end);
+        bookingRepository.save(booking);
+        return start;
     }
 }

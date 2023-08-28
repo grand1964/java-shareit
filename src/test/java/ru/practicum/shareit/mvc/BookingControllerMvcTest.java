@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -101,7 +102,7 @@ public class BookingControllerMvcTest {
 
     @Test
     void getAllBookingsTest() throws Exception {
-        when(bookingService.getAllBookingsForBooker(anyLong(), anyString(), anyInt(), anyInt()))
+        when(bookingService.getAllBookingsForBooker(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingOutDto));
 
         mvc.perform(get("/bookings?state={state}&from={from}&size={size}", "ALL", 0, 20)
@@ -128,7 +129,7 @@ public class BookingControllerMvcTest {
 
     @Test
     void getAllOwnerBookingsTest() throws Exception {
-        when(bookingService.getAllBookingsForOwner(anyLong(), anyString(), anyInt(), anyInt()))
+        when(bookingService.getAllBookingsForOwner(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingOutDto));
 
         mvc.perform(get("/bookings/owner?state={state}&from={from}&size={size}",
@@ -204,7 +205,7 @@ public class BookingControllerMvcTest {
 
     @Test
     void getAllBookingsWithBadFromParameterTest() throws Exception {
-        when(bookingService.getAllBookingsForBooker(anyLong(), anyString(), anyInt(), anyInt()))
+        when(bookingService.getAllBookingsForBooker(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingOutDto));
 
         mvc.perform(get("/bookings?state={state}&from={from}&size={size}", "ALL", -1, 20)
@@ -216,7 +217,7 @@ public class BookingControllerMvcTest {
 
     @Test
     void getAllOwnerBookingsWithBadSizeParameterTest() throws Exception {
-        when(bookingService.getAllBookingsForOwner(anyLong(), anyString(), anyInt(), anyInt()))
+        when(bookingService.getAllBookingsForOwner(anyLong(), anyString(), any(Pageable.class)))
                 .thenReturn(List.of(bookingOutDto));
 
         mvc.perform(get("/bookings/owner?state={state}&from={from}&size={size}",

@@ -3,7 +3,7 @@ package ru.practicum.shareit.booking.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDtoMapper;
 import ru.practicum.shareit.booking.dto.BookingInDto;
@@ -107,11 +107,10 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingOutDto> getAllBookingsForBooker(Long bookerId, String state, int from, int size) {
+    public List<BookingOutDto> getAllBookingsForBooker(Long bookerId, String state, Pageable pageable) {
         if (!userRepository.existsById(bookerId)) {
             throw new NotFoundException("Пользователь " + bookerId + " не найден.");
         }
-        PageRequest pageable = PageRequest.of(from / size, size);
         List<BookingOutDto> dtoList;
         switch (state) {
             case "ALL":
@@ -157,11 +156,11 @@ public class BookingServiceImpl implements BookingService {
         return dtoList;
     }
 
-    public List<BookingOutDto> getAllBookingsForOwner(Long ownerId, String state, int from, int size) {
+    @Override
+    public List<BookingOutDto> getAllBookingsForOwner(Long ownerId, String state, Pageable pageable) {
         if (!userRepository.existsById(ownerId)) {
             throw new NotFoundException("Владелец " + ownerId + " не найден.");
         }
-        PageRequest pageable = PageRequest.of(from / size, size);
         List<BookingOutDto> dtoList;
         switch (state) {
             case "ALL":
@@ -203,17 +202,5 @@ public class BookingServiceImpl implements BookingService {
                 throw new BadRequestException("Unknown state: UNSUPPORTED_STATUS");
         }
         return dtoList;
-    }
-
-    //////////////////////////// Поддержка тестов ///////////////////////////
-
-    public Timestamp updateBounds(Long bookingId, Timestamp start, Timestamp end) {
-        Booking booking = bookingRepository.findById(bookingId).orElseThrow(
-                () -> new BadRequestException("Бронь с идентификатором " + bookingId + " не найдена.")
-        );
-        booking.setStart(start);
-        booking.setEnd(end);
-        bookingRepository.save(booking);
-        return start;
     }
 }

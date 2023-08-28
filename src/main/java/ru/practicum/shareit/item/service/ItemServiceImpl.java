@@ -3,7 +3,7 @@ package ru.practicum.shareit.item.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDtoMapper;
 import ru.practicum.shareit.booking.model.Booking;
@@ -62,11 +62,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemOutBookedDto> getAllItems(Long ownerId, int from, int size) {
+    public List<ItemOutBookedDto> getAllItems(Long ownerId, Pageable pageable) {
         if (!userRepository.existsById(ownerId)) { //владелец некорректный
             throw new NotFoundException("Недопустимый владелец с идентификатором " + ownerId);
         }
-        PageRequest pageable = PageRequest.of(from / size, size);
         Timestamp now = Timestamp.from(Instant.now());
         //создаем выходной массив вещей
         List<ItemOutBookedDto> itemsDto = new ArrayList<>();
@@ -170,8 +169,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemOutDto> searchItems(String text, int from, int size) {
-        PageRequest pageable = PageRequest.of(from / size, size);
+    public List<ItemOutDto> searchItems(String text, Pageable pageable) {
         if (text.isBlank()) { //образец поиска не задан
             return new ArrayList<>(); //так требует Postman, хотя это странно
         } else { //получаем порцию данных

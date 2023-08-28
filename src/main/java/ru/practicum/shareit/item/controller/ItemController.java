@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.controller;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.*;
@@ -33,7 +34,8 @@ public class ItemController {
                                               @RequestParam(defaultValue = "0") @PositiveOrZero int from,
                                               @RequestParam(defaultValue = "20") @Positive int size) {
         log.info("Запрошено получение всех вещей владельца с идентификатором " + ownerId);
-        return itemService.getAllItems(ownerId, from, size);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        return itemService.getAllItems(ownerId, pageable);
     }
 
     //получение вещи по идентификатору
@@ -90,6 +92,7 @@ public class ItemController {
                                         @RequestParam(defaultValue = "0") @PositiveOrZero int from,
                                         @RequestParam(defaultValue = "20") @Positive int size) {
         log.info("Запрошен поиск вещи по образцу.");
-        return itemService.searchItems(text, from, size);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        return itemService.searchItems(text, pageable);
     }
 }
