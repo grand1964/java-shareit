@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.BadRequestException;
-import ru.practicum.shareit.exception.ConflictException;
-import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.common.exception.BadRequestException;
+import ru.practicum.shareit.common.exception.ConflictException;
+import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDtoMapper;
 import ru.practicum.shareit.user.dto.UserInDto;
 import ru.practicum.shareit.user.dto.UserOutDto;
@@ -40,8 +40,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserOutDto createUser(UserInDto userInDto) {
         User user = UserDtoMapper.toUser(userInDto);
-        log.info("Создан новый пользователь с идентификатором " + user.getId());
         User newUser = userRepository.save(user);
+        log.info("Создан новый пользователь с идентификатором " + newUser.getId());
         return UserDtoMapper.toUserOutDto(newUser);
     }
 

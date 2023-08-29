@@ -3,25 +3,29 @@ package ru.practicum.shareit.item.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDtoMapper;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.exception.BadRequestException;
-import ru.practicum.shareit.exception.ForbiddenException;
-import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.common.convert.ListConverter;
+import ru.practicum.shareit.common.exception.BadRequestException;
+import ru.practicum.shareit.common.exception.ForbiddenException;
+import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.storage.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.*;
-
-import static ru.practicum.shareit.item.dto.ItemDtoMapper.listToItemDto;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -30,15 +34,16 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository requestRepository;
 
     ////////////////////////////////// CRUD //////////////////////////////////
 
     @Override
-    public ItemBookedDto getItem(long itemId, long userId) {
+    public ItemOutBookedDto getItem(long itemId, long userId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с идентификатором " + itemId + " не найдена."));
         Timestamp now = Timestamp.from(Instant.now());
-        ItemBookedDto itemDto = ItemDtoMapper.toItemBookedDto(item);
+        ItemOutBookedDto itemDto = ItemDtoMapper.toItemOutBookedDto(item);
         //бронирования априори пусты
         itemDto.setLastBooking(null);
         itemDto.setNextBooking(null);
@@ -57,26 +62,27 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemBookedDto> getAllItems(Long ownerId) {
+    public List<ItemOutBookedDto> getAllItems(Long ownerId, Pageable pageable) {
         if (!userRepository.existsById(ownerId)) { //владелец некорректный
             throw new NotFoundException("Недопустимый владелец с идентификатором " + ownerId);
         }
         Timestamp now = Timestamp.from(Instant.now());
         //создаем выходной массив вещей
-        List<ItemBookedDto> itemsDto = new ArrayList<>();
+        List<ItemOutBookedDto> itemsDto = new ArrayList<>();
         //создаем отображение вещей в список комментариев
-        Map<Item, List<Comment>> allComments = ListConverter.itemToComments(
+        Map<Item, List<Comment>> allComments = ListConverter.keyToValues(
                 itemRepository.getAllCommentsByOwner(ownerId));
         //создаем отображения вещей в бронирования
-        Map<Item, Booking> lastMap = ListConverter.itemsToBookings(
+        Map<Item, Booking> lastMap = ListConverter.keyToValue(
                 itemRepository.getAllLastBookingsByOwner(ownerId, now));
-        Map<Item, Booking> nextMap = ListConverter.itemsToBookings(
+        Map<Item, Booking> nextMap = ListConverter.keyToValue(
                 itemRepository.getAllNextBookingsByOwner(ownerId, now));
-        //получаем список всех вещей владельца
-        List<Item> items = itemRepository.findByOwner_Id(ownerId);
+        //получаем порцию списка всех вещей владельца
+        List<Item> items = itemRepository.findByOwner_Id(ownerId, pageable).getContent();
         //заполняем выходной массив
         for (Item item : items) {
-            ItemBookedDto itemDto = ItemDtoMapper.toItemBookedDto(item);
+            ItemOutBookedDto itemDto = ItemDtoMapper.toItemOutBookedDto(item);
+            //в отображениях вещи сравниваются с ключами по идентификаторам
             if (lastMap.containsKey(item)) {
                 itemDto.setLastBooking(BookingDtoMapper.toBookingDto(lastMap.get(item)));
             }
@@ -99,13 +105,24 @@ public class ItemServiceImpl implements ItemService {
         User owner = userRepository.findById(ownerId).orElseThrow(
                 () -> new NotFoundException("Недопустимый владелец с идентификатором " + ownerId)
         );
-        Item item = ItemDtoMapper.toItem(owner, itemInDto);
+        //пытаемся получить request по его идентификатору из itemInDto
+        Long requestId = itemInDto.getRequestId();
+        ItemRequest request;
+        if (requestId != null) { //запрос есть, получаем его из базы
+            request = requestRepository.findById(requestId).orElseThrow(
+                    () -> new NotFoundException("Недопустимый запрос с идентификатором " + requestId)
+            );
+        } else { //запроса нет
+            request = null;
+        }
+        //создаем новую вещь (запрос может быть пустым)
+        Item item = itemRepository.save(ItemDtoMapper.toItem(owner, request, itemInDto));
         log.info("Создана новая вещь с идентификатором " + item.getId());
-        return ItemDtoMapper.toItemOutDto(itemRepository.save(item));
+        return ItemDtoMapper.toItemOutDto(item);
     }
 
     @Override
-    public ItemBookedDto patchItem(Long ownerId, ItemInDto itemInDto) {
+    public ItemOutDto patchItem(Long ownerId, ItemInDto itemInDto) {
         User owner = userRepository.findById(ownerId).orElseThrow(
                 () -> new NotFoundException("Недопустимый владелец с идентификатором " + ownerId)
         );
@@ -114,8 +131,8 @@ public class ItemServiceImpl implements ItemService {
         Item oldItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> new BadRequestException("Вещь с идентификатором " + itemId + "не найдена."));
         //проверяем владельца вещи
-        if (!(oldItem.getOwner()).equals(owner)) { //вещь пытается редактировать не владелец
-            throw new ForbiddenException("Пользователь " + owner + " не может редактировать эту вещь.");
+        if (!oldItem.getOwner().equals(owner)) { //вещь пытается редактировать не владелец
+            throw new ForbiddenException("Пользователь " + ownerId + " не может редактировать эту вещь.");
         }
         //если все корректно - переустанавливаем поля
         String name = itemInDto.getName();
@@ -131,7 +148,7 @@ public class ItemServiceImpl implements ItemService {
             oldItem.setAvailable(available);
         }
         log.info("Обновлена вещь с идентификатором " + oldItem.getId());
-        return ItemDtoMapper.toItemBookedDto(itemRepository.save(oldItem));
+        return ItemDtoMapper.toItemOutDto(itemRepository.save(oldItem));
     }
 
     @Override
@@ -152,11 +169,13 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemOutDto> searchItems(String text) {
+    public List<ItemOutDto> searchItems(String text, Pageable pageable) {
         if (text.isBlank()) { //образец поиска не задан
             return new ArrayList<>(); //так требует Postman, хотя это странно
-        } else {
-            return listToItemDto(itemRepository.searchItems(text));
+        } else { //получаем порцию данных
+            return itemRepository.searchItems(text, pageable)
+                    .map(ItemDtoMapper::toItemOutDto)
+                    .getContent();
         }
     }
 }

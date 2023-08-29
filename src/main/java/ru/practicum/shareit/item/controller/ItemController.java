@@ -3,6 +3,8 @@ package ru.practicum.shareit.item.controller;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.service.CommentService;
@@ -10,12 +12,15 @@ import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/items")
 @AllArgsConstructor(onConstructor_ = @Autowired)
+@Validated
 public class ItemController {
     private static final String HEADER_NAME = "X-Sharer-User-Id";
     private final ItemService itemService;
@@ -25,14 +30,17 @@ public class ItemController {
 
     //получение всех вещей
     @GetMapping
-    public List<ItemBookedDto> getAllItems(@RequestHeader(HEADER_NAME) Long ownerId) {
+    public List<ItemOutBookedDto> getAllItems(@RequestHeader(HEADER_NAME) Long ownerId,
+                                              @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                              @RequestParam(defaultValue = "20") @Positive int size) {
         log.info("Запрошено получение всех вещей владельца с идентификатором " + ownerId);
-        return itemService.getAllItems(ownerId);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        return itemService.getAllItems(ownerId, pageable);
     }
 
     //получение вещи по идентификатору
     @GetMapping(value = "/{id}")
-    public ItemBookedDto getItem(@PathVariable("id") long itemId, @RequestHeader(HEADER_NAME) long userId) {
+    public ItemOutBookedDto getItem(@PathVariable("id") long itemId, @RequestHeader(HEADER_NAME) long userId) {
         log.info("Запрошена вещь с идентификатором " + itemId + " пользователем " + userId);
         return itemService.getItem(itemId, userId);
     }
@@ -47,9 +55,9 @@ public class ItemController {
     }
 
     @PatchMapping(value = "/{id}")
-    public ItemBookedDto patchItem(@PathVariable("id") Long itemId,
-                                   @Valid @NotNull @RequestHeader(HEADER_NAME) Long ownerId,
-                                   @RequestBody ItemInDto itemInDto) {
+    public ItemOutDto patchItem(@PathVariable("id") Long itemId,
+                                @Valid @NotNull @RequestHeader(HEADER_NAME) Long ownerId,
+                                @RequestBody ItemInDto itemInDto) {
         log.info("Запрошено обновление вещи с идентификатором " + itemId);
         itemInDto.setId(itemId);
         return itemService.patchItem(ownerId, itemInDto); //здесь поля проверяются в itemService
@@ -80,8 +88,11 @@ public class ItemController {
     ////////////////////////////////// Поиск /////////////////////////////////
 
     @GetMapping(value = "/search")
-    public List<ItemOutDto> searchItems(@RequestParam(defaultValue = "") String text) {
+    public List<ItemOutDto> searchItems(@RequestParam(defaultValue = "") String text,
+                                        @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                        @RequestParam(defaultValue = "20") @Positive int size) {
         log.info("Запрошен поиск вещи по образцу.");
-        return itemService.searchItems(text);
+        PageRequest pageable = PageRequest.of(from / size, size);
+        return itemService.searchItems(text, pageable);
     }
 }
