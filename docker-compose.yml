@@ -12,7 +12,6 @@ services:
     environment:
       - SHAREIT_SERVER_URL=http://server:9090
       - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8081
-      - TZ=Europe/Moscow
 
   server:
     build: server
@@ -29,7 +28,6 @@ services:
       - DB_NAME=shareit
       - DB_HOST=db
       - DB_PORT=5432
-      - TZ=Europe/Moscow
 
   db:
     image: postgres:13.7-alpine
