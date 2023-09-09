@@ -3,6 +3,8 @@ package ru.practicum.shareit.mvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -72,34 +74,25 @@ public class RequestControllerMvcTest {
                 .andExpect(jsonPath("$.created", is(convertTime(requestOutDto.getCreated()))));
     }
 
-    @Test
-    void getRequestWithNonPositiveRequestIdTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void getRequestWithNonPositiveRequestIdTest(String value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HEADER_NAME, "1");
+        headers.add(HEADER_NAME, value);
 
         mvc.perform(get("/requests/{id}", 0)
                         .headers(headers)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(404));
-        mvc.perform(get("/requests/{id}", -1)
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
     }
 
-    @Test
-    void getRequestWithNonPositiveUserIdTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void getRequestWithNonPositiveUserIdTest(String value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HEADER_NAME, "0");
+        headers.add(HEADER_NAME, value);
 
-        mvc.perform(get("/requests/{id}", requestId)
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
-        headers.add(HEADER_NAME, "-1");
         mvc.perform(get("/requests/{id}", requestId)
                         .headers(headers)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -125,17 +118,12 @@ public class RequestControllerMvcTest {
                 .andExpect(jsonPath("$[0].created", is(convertTime(requestOutDto.getCreated()))));
     }
 
-    @Test
-    void getRequestsByOwnerWithNonPositiveOwnerIdTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void getRequestsByOwnerWithNonPositiveOwnerIdTest(String value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HEADER_NAME, "0");
+        headers.add(HEADER_NAME, value);
 
-        mvc.perform(get("/requests")
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
-        headers.add(HEADER_NAME, "-1");
         mvc.perform(get("/requests")
                         .headers(headers)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -191,17 +179,13 @@ public class RequestControllerMvcTest {
                 .andExpect(status().is(400));
     }
 
-    @Test
-    void getAllRequestsWithNonPositiveSizeTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void getAllRequestsWithNonPositiveSizeTest(String value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HEADER_NAME, "1");
 
-        mvc.perform(get("/requests/all?from={from}&size={size}", 0, 0)
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(400));
-        mvc.perform(get("/requests/all?from={from}&size={size}", 0, -1)
+        mvc.perform(get("/requests/all?from={from}&size={size}", 0, value)
                         .headers(headers)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON))
@@ -229,18 +213,11 @@ public class RequestControllerMvcTest {
                 .andExpect(jsonPath("$.created", is(convertTime(requestOutDto.getCreated()))));
     }
 
-    @Test
-    void createRequestWithNonPositiveRequesterIdTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void createRequestWithNonPositiveRequesterIdTest(String value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HEADER_NAME, "0");
-        mvc.perform(post("/requests")
-                        .content(mapper.writeValueAsString(requestInDto))
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
-        headers.set(HEADER_NAME, "-1");
+        headers.add(HEADER_NAME, value);
         mvc.perform(post("/requests")
                         .content(mapper.writeValueAsString(requestInDto))
                         .headers(headers)

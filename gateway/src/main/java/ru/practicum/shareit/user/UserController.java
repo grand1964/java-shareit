@@ -3,16 +3,15 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.common.validation.Validation;
+import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserInDto;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 
-@Controller
+@RestController
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
 @Slf4j
@@ -32,7 +31,7 @@ public class UserController {
     //получение пользователя по идентификатору
     @GetMapping(value = "/{id}")
     public ResponseEntity<Object> getUser(@PathVariable("id") long userId) {
-        Validation.validateId(userId);
+        validateId(userId);
         log.info("Запрошен пользователь с идентификатором {}", userId);
         return userClient.getUser(userId);
     }
@@ -48,7 +47,10 @@ public class UserController {
     @PatchMapping(value = "/{id}")
     public ResponseEntity<Object> patchUser(@PathVariable("id") @Positive long userId,
                                             @RequestBody UserInDto userInDto) {
-        Validation.validateUserDto(userInDto); //здесь корректность email проверяется вручную
+        //если email некорректный, то заменяем его пустым
+        if (!validateEmail(userInDto.getEmail())) {
+            userInDto.setEmail("");
+        }
         log.info("Запрошено обновление пользователя с идентификатором {}", userId);
         return userClient.patchUser(userId, userInDto);
     }
@@ -65,5 +67,28 @@ public class UserController {
     public ResponseEntity<Object> deleteAllUsers() {
         log.info("Запрошено удаление всех пользователей.");
         return userClient.deleteAllUsers();
+    }
+
+    ////////////////////////////// Валидация email ///////////////////////////
+
+    private boolean validateEmail(String email) {
+        if ((email == null) || (email.isBlank())) {
+            return false; //адрес должен быть непустым
+        }
+        int pos = email.indexOf('@');
+        if ((pos < 1) || (pos == email.length() - 1)) {
+            return false; //@ должно быть не первым и не последним символом
+        }
+        return (email.indexOf(' ') == -1); //не должно быть пробелов
+    }
+
+    ///////////////////////// Валидация идентификаторов ///////////////////////
+
+    private void validateId(long... ids) {
+        for (long id : ids) {
+            if (id <= 0) {
+                throw new NotFoundException("Идентификатор должен быть положительным");
+            }
+        }
     }
 }

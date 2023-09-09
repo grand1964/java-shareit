@@ -3,10 +3,9 @@ package ru.practicum.shareit.request;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.common.validation.Validation;
+import ru.practicum.shareit.common.exception.NotFoundException;
 import ru.practicum.shareit.request.dto.ItemRequestInDto;
 
 import javax.validation.Valid;
@@ -14,7 +13,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 
-@Controller
+@RestController
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
 @Slf4j
@@ -28,7 +27,7 @@ public class ItemRequestController {
 	//получение всех собственных запросов
 	@GetMapping
 	public ResponseEntity<Object> getRequestsByOwner(@Valid @NotNull @RequestHeader(HEADER_NAME) Long ownerId) {
-		Validation.validateId(ownerId);
+		validateId(ownerId);
 		log.info("Требуются все запросы пользователя с идентификатором {}", ownerId);
 		return requestClient.getRequestsByOwner(ownerId);
 	}
@@ -38,7 +37,7 @@ public class ItemRequestController {
 	public ResponseEntity<Object> getAllRequests(@RequestHeader(HEADER_NAME) Long userId,
 												 @RequestParam(defaultValue = "0") @PositiveOrZero int from,
 												 @RequestParam(defaultValue = "20") @Positive int size) {
-		Validation.validateId(userId);
+		validateId(userId);
 		log.info("постраничное получение запросов всех пользователей");
 		return requestClient.getAllRequests(userId, from, size);
 	}
@@ -47,7 +46,7 @@ public class ItemRequestController {
 	@GetMapping(value = "/{requestId}")
 	public ResponseEntity<Object> getRequest(@Valid @NotNull @RequestHeader(HEADER_NAME) Long userId,
 											 @PathVariable("requestId") long requestId) {
-		Validation.validateId(userId, requestId);
+		validateId(userId, requestId);
 		log.info("Требуется запрос с идентификатором {}", requestId);
 		return requestClient.getRequest(requestId, userId);
 	}
@@ -58,8 +57,18 @@ public class ItemRequestController {
 	@PostMapping
 	public ResponseEntity<Object> createRequest(@Valid @NotNull @RequestHeader(HEADER_NAME) long requesterId,
 												   @Valid @RequestBody ItemRequestInDto requestInDto) {
-		Validation.validateId(requesterId);
+		validateId(requesterId);
 		log.info("Создание нового запроса пользователем с идентификатором " + requesterId);
 		return requestClient.createRequest(requesterId, requestInDto);
+	}
+
+	///////////////////////// Валидация идентификаторов ///////////////////////
+
+	private void validateId(long... ids) {
+		for (long id : ids) {
+			if (id <= 0) {
+				throw new NotFoundException("Идентификатор должен быть положительным");
+			}
+		}
 	}
 }

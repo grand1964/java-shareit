@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.item.dto.ItemOutRequestDto;
 
-import javax.validation.constraints.Past;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,7 +16,6 @@ import java.util.List;
 public class ItemRequestOutDto {
     private Long id;
     private String description;
-    @Past
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime created;
     private List<ItemOutRequestDto> items;

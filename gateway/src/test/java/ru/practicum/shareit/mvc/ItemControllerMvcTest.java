@@ -3,6 +3,8 @@ package ru.practicum.shareit.mvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -71,16 +73,12 @@ public class ItemControllerMvcTest {
                 .andExpect(jsonPath("$.requestId", is(itemInDto.getRequestId()), Long.class));
     }
 
-    @Test
-    void getItemWithNonPositiveItemIdTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(longs = {0, -1})
+    void getItemWithNonPositiveItemIdTest(long value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HEADER_NAME, "1");
-        mvc.perform(get("/items/{id}", 0)
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
-        mvc.perform(get("/items/{id}", -1)
+        mvc.perform(get("/items/{id}", value)
                         .headers(headers)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON))
@@ -112,16 +110,11 @@ public class ItemControllerMvcTest {
                 .andExpect(jsonPath("$[1].requestId", is(patchInDto.getRequestId()), Long.class));
     }
 
-    @Test
-    void getAllItemsWithNonPositiveOwnerTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void getAllItemsWithNonPositiveOwnerTest(String value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HEADER_NAME, "0");
-        mvc.perform(get("/items")
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
-        headers.set(HEADER_NAME, "-1");
+        headers.add(HEADER_NAME, value);
         mvc.perform(get("/items")
                         .headers(headers)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -186,18 +179,11 @@ public class ItemControllerMvcTest {
                 .andExpect(jsonPath("$.requestId", is(itemInDto.getRequestId()), Long.class));
     }
 
-    @Test
-    void createItemWithNonPositiveOwnerIdTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void createItemWithNonPositiveOwnerIdTest(String value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HEADER_NAME, "0");
-        mvc.perform(post("/items")
-                        .content(mapper.writeValueAsString(itemInDto))
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
-        headers.set(HEADER_NAME, "-1");
+        headers.add(HEADER_NAME, value);
         mvc.perform(post("/items")
                         .content(mapper.writeValueAsString(itemInDto))
                         .headers(headers)
@@ -231,18 +217,12 @@ public class ItemControllerMvcTest {
                 .andExpect(jsonPath("$.requestId", is(patchInDto.getRequestId()), Long.class));
     }
 
-    @Test
-    void patchItemWithNonPositiveItemIdTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(longs = {0, -1})
+    void patchItemWithNonPositiveItemIdTest(long value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HEADER_NAME, "1");
-        mvc.perform(patch("/items/{id}", 0)
-                        .content(mapper.writeValueAsString(patchInDto))
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(400));
-        mvc.perform(patch("/items/{id}", -1)
+        mvc.perform(patch("/items/{id}", value)
                         .content(mapper.writeValueAsString(patchInDto))
                         .headers(headers)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -251,18 +231,11 @@ public class ItemControllerMvcTest {
                 .andExpect(status().is(400));
     }
 
-    @Test
-    void patchItemWithNonPositiveOwnerIdTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void patchItemWithNonPositiveOwnerIdTest(String value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HEADER_NAME, "0");
-        mvc.perform(patch("/items/{id}", 1)
-                        .content(mapper.writeValueAsString(patchInDto))
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
-        headers.add(HEADER_NAME, "-1");
+        headers.add(HEADER_NAME, value);
         mvc.perform(patch("/items/{id}", 1)
                         .content(mapper.writeValueAsString(patchInDto))
                         .headers(headers)
@@ -313,20 +286,13 @@ public class ItemControllerMvcTest {
                 .andExpect(status().is(400));
     }
 
-    @Test
-    void createCommentWithNonPositiveAuthorIdTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void createCommentWithNonPositiveAuthorIdTest(String value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HEADER_NAME, "0");
+        headers.add(HEADER_NAME, value);
         CommentInDto commentInDto = new CommentInDto("Comment");
 
-        mvc.perform(post("/items/{itemId}/comment", 1)
-                        .content(mapper.writeValueAsString(commentInDto))
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
-        headers.add(HEADER_NAME, "-1");
         mvc.perform(post("/items/{itemId}/comment", 1)
                         .content(mapper.writeValueAsString(commentInDto))
                         .headers(headers)
@@ -336,20 +302,14 @@ public class ItemControllerMvcTest {
                 .andExpect(status().is(404));
     }
 
-    @Test
-    void createCommentWithNonPositiveItemIdTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(longs = {0, -1})
+    void createCommentWithNonPositiveItemIdTest(long value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HEADER_NAME, "1");
         CommentInDto commentInDto = new CommentInDto("Comment");
 
-        mvc.perform(post("/items/{itemId}/comment", 0)
-                        .content(mapper.writeValueAsString(commentInDto))
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
-        mvc.perform(post("/items/{itemId}/comment", -1)
+        mvc.perform(post("/items/{itemId}/comment", value)
                         .content(mapper.writeValueAsString(commentInDto))
                         .headers(headers)
                         .characterEncoding(StandardCharsets.UTF_8)

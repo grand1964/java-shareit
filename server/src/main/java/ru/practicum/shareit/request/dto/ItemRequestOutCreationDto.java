@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.Past;
 import java.time.LocalDateTime;
 
 //Класс для ответа на создание запроса
@@ -15,7 +14,6 @@ import java.time.LocalDateTime;
 public class ItemRequestOutCreationDto {
     private Long id;
     private String description;
-    @Past
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime created;
 }

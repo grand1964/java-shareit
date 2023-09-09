@@ -3,6 +3,8 @@ package ru.practicum.shareit.mvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -77,33 +79,24 @@ public class BookingControllerMvcTest {
                 .andExpect(jsonPath("$.end", is(convertTime(bookingOutDto.getEnd()))));
     }
 
-    @Test
-    void getBookingWithNonPositiveBookingTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(longs = {0, -1})
+    void getBookingWithNonPositiveBookingTest(long value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HEADER_NAME, "1");
 
-        mvc.perform(get("/bookings/{id}", 0)
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
-        mvc.perform(get("/bookings/{id}", -1)
+        mvc.perform(get("/bookings/{id}", value)
                         .headers(headers)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(404));
     }
 
-    @Test
-    void getBookingWithNonPositiveOwnerTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void getBookingWithNonPositiveOwnerTest(String value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HEADER_NAME, "0");
-        mvc.perform(get("/bookings/{id}", bookingId)
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
-        headers.set(HEADER_NAME, "-1");
+        headers.add(HEADER_NAME, value);
         mvc.perform(get("/bookings/{id}", bookingId)
                         .headers(headers)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -260,19 +253,12 @@ public class BookingControllerMvcTest {
                 .andExpect(jsonPath("$.end", is(convertTime(bookingOutDto.getEnd()))));
     }
 
-    @Test
-    void createBookingWithNonPositiveBookerIdTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void createBookingWithNonPositiveBookerIdTest(String value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HEADER_NAME, "0");
+        headers.add(HEADER_NAME, value);
 
-        mvc.perform(post("/bookings")
-                        .content(mapper.writeValueAsString(bookingInDto))
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
-        headers.set(HEADER_NAME, "-1");
         mvc.perform(post("/bookings")
                         .content(mapper.writeValueAsString(bookingInDto))
                         .headers(headers)
@@ -345,19 +331,12 @@ public class BookingControllerMvcTest {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    void confirmBookingWithNotPositiveOwnerIdTest() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void confirmBookingWithNotPositiveOwnerIdTest(String value) throws Exception {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HEADER_NAME, "0");
+        headers.add(HEADER_NAME, value);
 
-        mvc.perform(patch("/bookings/{id}?approved={approved}", bookingId, true)
-                        .content(mapper.writeValueAsString(bookingInDto))
-                        .headers(headers)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
-        headers.add(HEADER_NAME, "-1");
         mvc.perform(patch("/bookings/{id}?approved={approved}", bookingId, true)
                         .content(mapper.writeValueAsString(bookingInDto))
                         .headers(headers)

@@ -26,8 +26,9 @@ services:
       - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9091
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareit
       - DB_NAME=shareit
-      - DB_HOST=db
-      - DB_PORT=5432
+      - DB_PORT=6541
+      - DB_USER=root
+      - DB_PASSWORD=root
 
   db:
     image: postgres:13.7-alpine
