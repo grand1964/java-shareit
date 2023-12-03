@@ -19,7 +19,7 @@ ShareIt
 
 *Развертывание*: 
 - собрать проект командой **mvn clean package**;
-- запустить Docker; 
-- перейти в каталог проекта и вызвать команду docker-compose up.
+- запустить **Docker**; 
+- перейти в каталог проекта и вызвать команду **docker-compose up**.
 
 Модуль gateway будет развернут по адресу *localhost*:8080, а модуль server - по адресу *localhost*:9090. Данные будут храниться в базе PostgreSQL, доступной по адресу *localhost*:6541. Эти настройки можно изменить, редактируя файлы **docker-compose.yml** и **application.properties**. 
